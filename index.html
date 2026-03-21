@@ -1,4 +1,4 @@
-bardaks-personel index.html — v4 (kuruş düzeltme)
+bardaks-personel index.html — v5 (fatura detay/sil)
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -939,7 +939,7 @@ function renderFaturalar(){
   document.getElementById('f-bugun').textContent=fmt(fb.reduce((a,f)=>a+(f.toplam||0),0));
   document.getElementById('f-ay').textContent=fmt(D.faturalar.reduce((a,f)=>a+(f.toplam||0),0));
   document.getElementById('fat-bugun-list').innerHTML=fb.length?fb.map(f=>`
-    <div class="fat-item ${f.tip||'diger'}">
+    <div class="fat-item ${f.tip||'diger'}" onclick="fatDetay('${f.id}')" style="cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-size:13px;font-weight:600">${BELGE_EMO[f.belge_tip]||'🧾'} ${f.firma}</div>
@@ -948,6 +948,7 @@ function renderFaturalar(){
         <div style="text-align:right">
           <div style="font-size:14px;font-weight:700;color:var(--red)">${fmt(f.toplam)}</div>
           <div style="font-size:10px;color:var(--ink3)">KDV: ${fmt(f.kdv_tutari)}</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:2px">👆 Detay</div>
         </div>
       </div>
     </div>`).join(''):'<div class="empty">Bugün belge girilmedi</div>';
@@ -958,6 +959,49 @@ function renderFaturalar(){
       <div class="rn">${TIP_ADI[tip]||tip}</div>
       <div style="font-size:14px;font-weight:700;color:var(--red)">${fmt(top)}</div>
     </div>`).join('')||'<div class="empty">Bu ay fatura yok</div>';
+}
+
+async function fatDetay(id){
+  const f=D.faturalar.find(x=>x.id===id);if(!f)return;
+  const{data:kalemler}=await sb.from('fatura_kalemleri').select('*').eq('fatura_id',id);
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:flex;align-items:flex-end;padding:0';
+  modal.innerHTML=`
+    <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:16px;font-weight:700">${BELGE_EMO[f.belge_tip]||'🧾'} ${f.firma}</div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--cream2);font-size:18px;cursor:pointer">×</button>
+      </div>
+      <div style="font-size:12px;color:var(--ink3);margin-bottom:12px">${fmtD(f.tarih)} · ${TIP_ADI[f.tip]||f.tip} · ${f.belge_tip||'fatura'} · ${f.fatura_no||'No yok'}</div>
+      ${f.foto_url?`<img src="${f.foto_url}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:200px;object-fit:contain">`:
+      '<div style="background:var(--cream);border-radius:8px;padding:12px;text-align:center;font-size:12px;color:var(--ink3);margin-bottom:12px">📷 Fotoğraf yok</div>'}
+      <div style="font-size:10px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Ürün Kalemleri</div>
+      ${(kalemler||[]).length?kalemler.map(k=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--cream2);font-size:13px">
+          <div><div style="font-weight:500">${k.urun_adi}</div><div style="font-size:11px;color:var(--ink3)">${k.miktar} ${k.birim} × ${fmt(k.birim_fiyat)}${k.iskonto_tutari>0?' · İsk: '+fmt(k.iskonto_tutari):''}</div></div>
+          <div style="font-weight:700;color:var(--green2)">${fmt(k.satir_toplam)}</div>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--ink3);padding:8px 0">Kalem detayı yok</div>'}
+      <div style="background:var(--ink);border-radius:12px;padding:14px;margin:12px 0">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.7);padding:2px 0"><span>KDV Hariç</span><span>${fmt(f.kdv_haric)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.7);padding:2px 0"><span>KDV (%${f.kdv_orani})</span><span>${fmt(f.kdv_tutari)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#fbbf24;padding:6px 0 2px;border-top:1px solid rgba(255,255,255,.15);margin-top:4px"><span>NET TOPLAM</span><span>${fmt(f.toplam)}</span></div>
+      </div>
+      <button onclick="fatSil('${f.id}',this)" style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--red2);color:var(--red);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">🗑️ Bu Faturayı Sil</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+}
+
+async function fatSil(id,btn){
+  if(!confirm('Bu fatura silinecek. Emin misin?'))return;
+  btn.textContent='Siliniyor...';btn.disabled=true;
+  const{error}=await sb.from('gelen_faturalar').delete().eq('id',id);
+  if(error){alert('Silme hatası: '+error.message);btn.textContent='🗑️ Bu Faturayı Sil';btn.disabled=false;return;}
+  // Kalemleri de sil
+  await sb.from('fatura_kalemleri').delete().eq('fatura_id',id);
+  btn.closest('[style*=fixed]').remove();
+  await loadData();
+  alert('Fatura silindi.');
 }
 
 // ─── REÇETELER ───
