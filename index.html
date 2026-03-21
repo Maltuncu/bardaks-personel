@@ -1,3 +1,4 @@
+bardaks-personel index.html — v3 (Edge Function)
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -572,20 +573,11 @@ async function fatOku(e){
   reader.onload=async(ev)=>{
     const b64=ev.target.result.split(',')[1];
     try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},
-            {type:'text',text:`Bu fatura/fiş görselini analiz et. Tüm ürün kalemlerini çıkar. SADECE JSON döndür, başka hiçbir şey yazma:
-{"firma":"...","tarih":"YYYY-MM-DD","fatura_no":"...","kdv_orani":10,"fiyat_tip":"dahil",
-"kalemler":[{"urun_adi":"...","miktar":1,"birim":"kg","birim_fiyat":0,"iskonto_yuzde":0}],
-"kdv_haric":0,"kdv_tutari":0,"toplam":0}
-Birim için sadece şunları kullan: kg, g, litre, ml, adet, koli, kutu, paket, şişe, torba`}
-          ]}]})});
-      const data=await resp.json();
-      const text=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-      aiSonuc=JSON.parse(text);
+      const resp=await fetch('https://szavcharoqgofdeepnwk.supabase.co/functions/v1/fatura-oku',{method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SKEY},
+        body:JSON.stringify({image_base64:b64,media_type:file.type||'image/jpeg'})});
+      aiSonuc=await resp.json();
+      if(aiSonuc.error)throw new Error(aiSonuc.error);
       const k=aiSonuc.kalemler||[];
       document.getElementById('ai-fields').innerHTML=`
         <div class="tip"><span class="k">Firma</span><span class="v">${aiSonuc.firma||'?'}</span></div>
@@ -1141,4 +1133,3 @@ function nav(id){
 </script>
 </body>
 </html>
-
