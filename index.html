@@ -1,4 +1,4 @@
-bardaks-personel index.html — v3 (Edge Function)
+bardaks-personel index.html — v4 (kuruş düzeltme)
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -444,7 +444,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 const SURL='https://szavcharoqgofdeepnwk.supabase.co';
 const SKEY='sb_publishable_m9257AIquNeNw6o9BfpMLA_SmGDGBxi';
 const sb=supabase.createClient(SURL,SKEY);
-const fmt=n=>'₺'+Math.round(n||0).toLocaleString('tr-TR');
+const fmt=n=>{const v=Math.round((n||0)*100)/100;return '₺'+v.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});};
 const fmtD=s=>s?new Date(s).toLocaleDateString('tr-TR'):'';
 const today=()=>new Date().toISOString().split('T')[0];
 const todayMonth=()=>new Date().toISOString().slice(0,7);
@@ -1133,3 +1133,4 @@ function nav(id){
 </script>
 </body>
 </html>
+
