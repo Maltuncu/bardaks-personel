@@ -1,4 +1,4 @@
-bardaks-personel index.html — v5 (fatura detay/sil)
+bardaks-personel index.html — v6 (ay listesi)
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -344,6 +344,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
     <!-- BUGÜN GİRİLENLER -->
     <div class="card"><div class="card-title">Bugün Girilen Belgeler</div><div id="fat-bugun-list"></div></div>
     <div class="card"><div class="card-title">Bu Ay Tip Bazlı Özet</div><div id="fat-ay-list"></div></div>
+    <div class="card"><div class="card-title">Bu Ay Tüm Belgeler</div><div id="fat-ay-fatura-list"></div></div>
   </div>
 
   <!-- RECETELER -->
@@ -959,6 +960,24 @@ function renderFaturalar(){
       <div class="rn">${TIP_ADI[tip]||tip}</div>
       <div style="font-size:14px;font-weight:700;color:var(--red)">${fmt(top)}</div>
     </div>`).join('')||'<div class="empty">Bu ay fatura yok</div>';
+
+  // Tüm ay fatura listesi
+  const ayListEl=document.getElementById('fat-ay-fatura-list');
+  if(ayListEl){
+    ayListEl.innerHTML=D.faturalar.length?D.faturalar.map(f=>`
+      <div class="fat-item ${f.tip||'diger'}" onclick="fatDetay('${f.id}')" style="cursor:pointer">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;font-weight:600">${BELGE_EMO[f.belge_tip]||'🧾'} ${f.firma}</div>
+            <div style="font-size:11px;color:var(--ink3)">${fmtD(f.tarih)} · ${TIP_ADI[f.tip]||f.tip}${f.foto_url?' · 📷':''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:14px;font-weight:700;color:var(--red)">${fmt(f.toplam)}</div>
+            <div style="font-size:10px;color:var(--navy)">👆 Detay / Sil</div>
+          </div>
+        </div>
+      </div>`).join(''):'<div class="empty">Bu ay fatura yok</div>';
+  }
 }
 
 async function fatDetay(id){
