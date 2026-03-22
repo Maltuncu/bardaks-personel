@@ -270,8 +270,10 @@ select option{background:var(--white);}
       <button class="nb" onclick="tab('fatura')">Fatura</button>
       <button class="nb" onclick="tab('dissatis')">Dış Satış</button>
       <button class="nb" onclick="tab('musteriler')">Müşteriler</button>
+      <button class="nb" onclick="tab('recete')">Reçete</button>
       <button class="nb" onclick="tab('stok')">Stok</button>
       <button class="nb" onclick="tab('mesaj')">Mesajlar</button>
+      <button class="nb" onclick="tab('aysonu')">Ay Sonu</button>
       <button class="nb" onclick="tab('gecmis')">Geçmiş</button>
     </div>
   </div>
@@ -493,6 +495,74 @@ select option{background:var(--white);}
       <div id="crm-liste"><div style="color:var(--text3);font-size:13px;">Yükleniyor…</div></div>
     </div>
 
+    <!-- REÇETE -->
+    <div class="sec" id="sec-recete">
+      <!-- ALT SEKME -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn btn-sm" id="rt-recete-btn" onclick="receteAlt('recete')" style="flex:1;background:var(--blue);color:white;">Reçeteler</button>
+        <button class="btn btn-ghost btn-sm" id="rt-hammadde-btn" onclick="receteAlt('hammadde')" style="flex:1;">Hammaddeler</button>
+      </div>
+
+      <!-- REÇETE LİSTESİ -->
+      <div id="rt-recete">
+        <button class="btn btn-ghost" style="margin-bottom:12px;" onclick="openReceteModal()">+ Yeni Reçete Ekle</button>
+        <div id="recete-liste"><div style="color:var(--text3);font-size:13px;">Yükleniyor…</div></div>
+      </div>
+
+      <!-- HAMMADDE YÖNETİM -->
+      <div id="rt-hammadde" style="display:none;">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">Hammadde Ekle</div></div>
+          <label class="lbl">Hammadde Adı</label>
+          <input type="text" id="hm-isim" placeholder="örn: Espresso Kahve">
+          <div class="row3">
+            <div><label class="lbl">Birim</label>
+              <select id="hm-birim">
+                <option value="gr">gr</option>
+                <option value="ml">ml</option>
+                <option value="kg">kg</option>
+                <option value="lt">lt</option>
+                <option value="adet">adet</option>
+              </select>
+            </div>
+            <div><label class="lbl">Birim Maliyet (₺)</label><input type="number" id="hm-maliyet" placeholder="0.00"></div>
+            <div><label class="lbl">Min Stok</label><input type="number" id="hm-minstok" placeholder="0"></div>
+          </div>
+          <label class="lbl">Mevcut Stok Miktarı</label>
+          <input type="number" id="hm-stok" placeholder="0">
+          <button class="btn" onclick="hammaddeKaydet()">Hammadde Ekle</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">Hammadde Listesi</div></div>
+          <div id="hammadde-liste"><div style="color:var(--text3);font-size:13px;">Yükleniyor…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REÇETE MODAL -->
+    <div class="modal-bg" id="recete-modal">
+      <div class="modal">
+        <div class="modal-title">
+          <span id="recete-modal-title">Reçete Oluştur</span>
+          <button class="modal-close" onclick="closeModal('recete-modal')">×</button>
+        </div>
+        <label class="lbl">Ürün Seç</label>
+        <select id="recete-urun-sel"><option value="">Ürün seç…</option></select>
+        <label class="lbl">Porsiyon / Yapım Sayısı</label>
+        <input type="number" id="recete-porsiyon" placeholder="1" value="1" oninput="receteMaliyet()">
+        <label class="lbl">Hammaddeler</label>
+        <div id="recete-kalemler"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%;" onclick="receteKalemEkle()">+ Hammadde Ekle</button>
+        <!-- MALİYET ÖZET -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;">
+          <div class="kasa-box"><div class="kbox-lbl">Toplam Maliyet</div><div class="kbox-val" id="rm-toplam" style="font-size:14px;">₺ 0</div></div>
+          <div class="kasa-box"><div class="kbox-lbl">Porsiyon Maliyeti</div><div class="kbox-val" id="rm-porsiyon" style="font-size:14px;">₺ 0</div></div>
+          <div class="kasa-box kg"><div class="kbox-lbl">Kâr Marjı</div><div class="kbox-val" id="rm-marj" style="font-size:14px;">—</div></div>
+        </div>
+        <button class="btn" onclick="receteKaydet()">Reçeteyi Kaydet</button>
+      </div>
+    </div>
+
     <!-- STOK -->
     <div class="sec" id="sec-stok">
       <div class="card">
@@ -530,6 +600,91 @@ select option{background:var(--white);}
       <div class="card">
         <div class="card-hdr"><div class="card-hdr-left">📩 Gelen Mesajlar</div></div>
         <div class="chat-area" id="chat-area"><div style="color:var(--text3);font-size:13px;text-align:center;">Yükleniyor…</div></div>
+      </div>
+    </div>
+
+    <!-- AY SONU KAPANIS -->
+    <div class="sec" id="sec-aysonu">
+      <!-- ALT SEKME -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn btn-sm" id="as-kapanis-btn" onclick="aysonuAlt('kapanis')" style="flex:1;background:var(--blue);color:white;">Ay Kapanışı</button>
+        <button class="btn btn-ghost btn-sm" id="as-pos-btn" onclick="aysonuAlt('pos')" style="flex:1;">POS Terminaller</button>
+        <button class="btn btn-ghost btn-sm" id="as-gecmis-btn" onclick="aysonuAlt('aylar')" style="flex:1;">Geçmiş Aylar</button>
+      </div>
+
+      <!-- AY KAPANIS FORMU -->
+      <div id="as-kapanis">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">📅 Dönem</div></div>
+          <div class="row2">
+            <div><label class="lbl">Başlangıç</label><input type="date" id="as-baslangic"></div>
+            <div><label class="lbl">Bitiş</label><input type="date" id="as-bitis"></div>
+          </div>
+          <button class="btn btn-ghost" style="margin-top:10px;" onclick="donemOtoDoldur()">📊 Dönemi Otomatik Hesapla</button>
+        </div>
+
+        <!-- NAKİT / KART ÖZET -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">💰 Kasa Özeti</div></div>
+          <div id="as-kasa-ozet"><div style="color:var(--text3);font-size:13px;">Dönem seçip hesapla butonuna bas</div></div>
+        </div>
+
+        <!-- POS KESİNTİLERİ -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">🏦 POS Kesintileri</div></div>
+          <div id="as-pos-kesimler"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;">POS terminalleri "POS Terminaller" sekmesinden ekleyin</div>
+        </div>
+
+        <!-- DİĞER GİDERLER -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">📋 Diğer Banka/POS Giderleri</div></div>
+          <div id="as-diger-giderler"></div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%;" onclick="digerGiderEkle()">+ Gider Kalemi Ekle</button>
+        </div>
+
+        <!-- NET ÖZET -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">📊 Net Özet</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div class="kasa-box kb"><div class="kbox-lbl">Toplam Nakit</div><div class="kbox-val" id="as-net-nakit">₺ 0</div></div>
+            <div class="kasa-box kb"><div class="kbox-lbl">Toplam Kart</div><div class="kbox-val" id="as-net-kart">₺ 0</div></div>
+            <div class="kasa-box"><div class="kbox-lbl">POS Kesintisi</div><div class="kbox-val" id="as-net-pos" style="color:var(--red);">₺ 0</div></div>
+            <div class="kasa-box"><div class="kbox-lbl">Diğer Giderler</div><div class="kbox-val" id="as-net-diger" style="color:var(--red);">₺ 0</div></div>
+          </div>
+          <div class="toplam-box">
+            <div class="tbox-lbl">Net Kasa (Dönem)</div>
+            <div class="tbox-val" id="as-net-toplam">₺ 0</div>
+          </div>
+          <label class="lbl">Notlar</label>
+          <textarea id="as-notlar" placeholder="Ay sonu notları…"></textarea>
+          <button class="btn btn-green" onclick="ayKapat()">✓ Ayı Kapat ve Kaydet</button>
+        </div>
+      </div>
+
+      <!-- POS TERMİNALLER -->
+      <div id="as-pos" style="display:none;">
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">POS Terminal Ekle</div></div>
+          <div class="row2">
+            <div><label class="lbl">Terminal Adı</label><input type="text" id="pos-isim" placeholder="örn: Garanti POS"></div>
+            <div><label class="lbl">Banka</label><input type="text" id="pos-banka" placeholder="örn: Garanti"></div>
+          </div>
+          <div class="row2">
+            <div><label class="lbl">Komisyon Oranı (%)</label><input type="number" id="pos-oran" placeholder="1.50" step="0.01"></div>
+            <div><label class="lbl">Aylık Kira (₺)</label><input type="number" id="pos-kira" placeholder="0"></div>
+          </div>
+          <button class="btn" onclick="posEkle()">Terminal Ekle</button>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-left">Terminaller</div></div>
+          <div id="pos-liste"><div style="color:var(--text3);font-size:13px;">Yükleniyor…</div></div>
+        </div>
+      </div>
+
+      <!-- GEÇMIŞ AYLAR -->
+      <div id="as-aylar" style="display:none;">
+        <div id="ay-gecmis-liste"><div style="color:var(--text3);font-size:13px;">Yükleniyor…</div></div>
       </div>
     </div>
 
@@ -677,7 +832,7 @@ async function checkPin(){
 }
 
 // TABS
-const TABS=['ana','kasa','satis','online','fatura','dissatis','musteriler','stok','mesaj','gecmis'];
+const TABS=['ana','kasa','satis','online','fatura','dissatis','musteriler','recete','stok','mesaj','aysonu','gecmis'];
 function tab(id){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
@@ -690,8 +845,10 @@ function tab(id){
   if(id==='fatura'){document.getElementById('fat-tarih').value=today();loadFaturalar();}
   if(id==='dissatis'){loadDisSatislar('hepsi');}
   if(id==='musteriler'){loadMusteriler();}
+  if(id==='recete'){loadRecete();}
   if(id==='stok'){loadStok();}
   if(id==='mesaj'){loadMesajlar();}
+  if(id==='aysonu'){loadAySonu();}
   if(id==='gecmis'){loadGecmis('hepsi');}
 }
 
@@ -703,6 +860,12 @@ function initApp(){
   document.getElementById('ds-tarih').value=today();
   loadAna();loadUrunler();
   sb.channel('mesajlar').on('postgres_changes',{event:'INSERT',schema:'public',table:'mesajlar'},()=>{loadMesajlar();loadAna();}).subscribe();
+  // Reçete tablosuna ek kolonlar (ilk açılışta otomatik)
+  sb.from('receteler').select('kar_marji').limit(1).then(({error})=>{
+    if(error?.message?.includes('kar_marji')){
+      // Kolon yoksa Supabase'de SQL gerekir — sessizce geç
+    }
+  });
 }
 
 // ANA SAYFA
@@ -977,7 +1140,9 @@ async function satisKaydet(){
   try{
     const{error}=await sb.from('gunluk_satislar').insert(rows);
     if(error)throw error;
-    toast('Satış kaydedildi ✓','ok');renderUrunler();loadSatislar();loadAna();
+    toast('Satış kaydedildi ✓','ok');
+    await stokDus(rows);
+    renderUrunler();loadSatislar();loadAna();
   }catch(e){toast('Hata: '+e.message,'err');}
 }
 async function loadSatislar(){
@@ -1406,6 +1571,247 @@ async function crmKaydet(){
   }catch(e){toast('Hata: '+e.message,'err');}
 }
 
+// REÇETE
+let hammaddeler=[];let receteKalemSayac=0;let receteEditId=null;
+
+function receteAlt(id){
+  document.getElementById('rt-recete').style.display=id==='recete'?'block':'none';
+  document.getElementById('rt-hammadde').style.display=id==='hammadde'?'block':'none';
+  document.getElementById('rt-recete-btn').style.cssText=id==='recete'?'flex:1;background:var(--blue);color:white;':'flex:1;';
+  document.getElementById('rt-hammadde-btn').style.cssText=id==='hammadde'?'flex:1;background:var(--blue);color:white;':'flex:1;';
+  if(id==='hammadde')loadHammaddeler();
+  if(id==='recete')loadRecete();
+}
+
+async function loadHammaddeler(){
+  try{
+    const{data}=await sb.from('hammaddeler').select('*').eq('sube_id',SUBE).order('isim');
+    hammaddeler=data||[];
+    const el=document.getElementById('hammadde-liste');
+    if(!hammaddeler.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">Hammadde yok</div>';return;}
+    el.innerHTML=hammaddeler.map(h=>`
+      <div class="li">
+        <div>
+          <div class="li-main">${h.isim}</div>
+          <div class="li-sub">${tl(h.birim_maliyet)} / ${h.birim} · Stok: ${h.stok_miktari} ${h.birim}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${h.stok_miktari<=h.min_stok?'b-red':'b-green'}">${h.stok_miktari<=h.min_stok?'Kritik':'OK'}</span>
+          <button class="btn btn-ghost btn-sm" onclick="hammaddeGuncelle('${h.id}')">✏️</button>
+        </div>
+      </div>`).join('');
+  }catch(e){}
+}
+
+async function hammaddeKaydet(){
+  const isim=document.getElementById('hm-isim').value.trim();
+  if(!isim){toast('İsim girin','err');return;}
+  const birim=document.getElementById('hm-birim').value;
+  const birim_maliyet=parseFloat(document.getElementById('hm-maliyet').value)||0;
+  const min_stok=parseFloat(document.getElementById('hm-minstok').value)||0;
+  const stok_miktari=parseFloat(document.getElementById('hm-stok').value)||0;
+  try{
+    const{error}=await sb.from('hammaddeler').insert({sube_id:SUBE,isim,birim,birim_maliyet,min_stok,stok_miktari});
+    if(error)throw error;
+    toast('Hammadde eklendi ✓','ok');
+    ['hm-isim','hm-maliyet','hm-minstok','hm-stok'].forEach(id=>document.getElementById(id).value='');
+    loadHammaddeler();
+  }catch(e){toast('Hata: '+e.message,'err');}
+}
+
+async function hammaddeGuncelle(id){
+  const h=hammaddeler.find(x=>x.id===id);
+  if(!h)return;
+  const yeniStok=prompt(`${h.isim} - Mevcut stok: ${h.stok_miktari} ${h.birim}\nYeni stok miktarı girin:`);
+  if(yeniStok===null)return;
+  const yeniMaliyet=prompt(`Birim maliyet (${h.birim}) - Mevcut: ₺${h.birim_maliyet}\nYeni maliyet girin (boş bırakırsan değişmez):`);
+  const payload={stok_miktari:parseFloat(yeniStok)||0};
+  if(yeniMaliyet)payload.birim_maliyet=parseFloat(yeniMaliyet)||h.birim_maliyet;
+  try{
+    const{error}=await sb.from('hammaddeler').update(payload).eq('id',id);
+    if(error)throw error;
+    toast('Güncellendi ✓','ok');loadHammaddeler();
+  }catch(e){toast('Hata','err');}
+}
+
+async function loadRecete(){
+  try{
+    const{data}=await sb.from('receteler').select('*').eq('sube_id',SUBE).order('urun_adi');
+    const el=document.getElementById('recete-liste');
+    if(!data?.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">Henüz reçete yok. Ürünlerinize reçete ekleyin.</div>';return;}
+    // Hammaddeleri de yükle (maliyet güncel hesap için)
+    const{data:hm}=await sb.from('hammaddeler').select('*').eq('sube_id',SUBE);
+    hammaddeler=hm||[];
+    el.innerHTML=data.map(r=>{
+      // Güncel maliyet hesapla
+      let topMaliyet=0;
+      (r.porsiyonlar||[]).forEach(p=>{
+        const hm=hammaddeler.find(h=>h.id===p.hammadde_id);
+        if(hm)topMaliyet+=p.miktar*(hm.birim_maliyet||0);
+      });
+      const porMaliyet=r.porsiyon_sayisi?topMaliyet/r.porsiyon_sayisi:topMaliyet;
+      return`<div class="card" style="margin-bottom:10px;">
+        <div class="card-hdr">
+          <div class="card-hdr-left">${r.urun_adi}</div>
+          <button class="btn btn-ghost btn-sm" onclick="openReceteModal('${r.id}')">Düzenle</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div class="kasa-box"><div class="kbox-lbl">Toplam Maliyet</div><div class="kbox-val" style="font-size:14px;">${tl(topMaliyet)}</div></div>
+          <div class="kasa-box"><div class="kbox-lbl">Porsiyon Maliyeti</div><div class="kbox-val" style="font-size:14px;">${tl(porMaliyet)}</div></div>
+          <div class="kasa-box ${r.kar_marji>50?'kg':''}"><div class="kbox-lbl">Kâr Marjı</div><div class="kbox-val" style="font-size:14px;color:${r.kar_marji>50?'var(--green)':r.kar_marji>20?'var(--warn)':'var(--red)'}">%${r.kar_marji||0}</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);">
+          ${(r.porsiyonlar||[]).map(p=>{
+            const hm=hammaddeler.find(h=>h.id===p.hammadde_id);
+            return`${p.isim||hm?.isim||'?'}: ${p.miktar} ${p.birim||hm?.birim||''}`;
+          }).join(' · ')}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){}
+}
+
+async function openReceteModal(id){
+  receteEditId=id||null;
+  receteKalemSayac=0;
+  document.getElementById('recete-kalemler').innerHTML='';
+  document.getElementById('recete-porsiyon').value=1;
+  document.getElementById('rm-toplam').textContent='₺ 0';
+  document.getElementById('rm-porsiyon').textContent='₺ 0';
+  document.getElementById('rm-marj').textContent='—';
+  // Ürünleri yükle
+  try{
+    const{data}=await sb.from('urunler').select('*').eq('sube_id',SUBE).eq('aktif',true).order('urun_adi');
+    const sel=document.getElementById('recete-urun-sel');
+    sel.innerHTML='<option value="">Ürün seç…</option>'+(data||[]).map(u=>`<option value="${u.id}" data-adi="${u.urun_adi}" data-fiyat="${u.satis_fiyati}">${u.urun_adi}</option>`).join('');
+  }catch(e){}
+  // Hammaddeleri yükle
+  await loadHammaddeler();
+  // Mevcut reçete varsa doldur
+  if(id){
+    try{
+      const{data}=await sb.from('receteler').select('*').eq('id',id).single();
+      if(data){
+        document.getElementById('recete-modal-title').textContent='Reçete Düzenle';
+        document.getElementById('recete-porsiyon').value=data.porsiyon_sayisi||1;
+        const sel=document.getElementById('recete-urun-sel');
+        for(let opt of sel.options){if(opt.value===data.urun_id){sel.value=opt.value;break;}}
+        (data.porsiyonlar||[]).forEach(p=>receteKalemEkle(p));
+        receteMaliyet();
+      }
+    }catch(e){}
+  }else{
+    document.getElementById('recete-modal-title').textContent='Reçete Oluştur';
+    receteKalemEkle();
+  }
+  document.getElementById('recete-modal').classList.add('on');
+}
+
+function receteKalemEkle(mevcut){
+  const id='rk'+receteKalemSayac++;
+  const div=document.createElement('div');
+  div.id=id;
+  div.style.cssText='background:var(--cream);border-radius:var(--r-sm);padding:10px;margin-bottom:6px;';
+  const hmOpts=hammaddeler.map(h=>`<option value="${h.id}" data-birim="${h.birim}" data-maliyet="${h.birim_maliyet}" ${mevcut?.hammadde_id===h.id?'selected':''}>${h.isim} (${h.birim})</option>`).join('');
+  div.innerHTML=`
+    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:end;">
+      <div><label class="lbl" style="margin-top:0">Hammadde</label>
+        <select class="rk-hm" onchange="receteMaliyet()">
+          <option value="">Seç…</option>${hmOpts}
+        </select>
+      </div>
+      <div><label class="lbl" style="margin-top:0">Miktar</label>
+        <input type="number" class="rk-miktar" placeholder="0" value="${mevcut?.miktar||''}" oninput="receteMaliyet()">
+      </div>
+      <button onclick="document.getElementById('${id}').remove();receteMaliyet()" style="height:40px;width:30px;background:var(--red-bg);color:var(--red);border:none;border-radius:6px;cursor:pointer;font-size:16px;margin-bottom:1px;">×</button>
+    </div>
+    <div class="rk-maliyet-lbl" style="font-size:10px;color:var(--text3);margin-top:4px;"></div>`;
+  document.getElementById('recete-kalemler').appendChild(div);
+}
+
+function receteMaliyet(){
+  let toplam=0;
+  document.querySelectorAll('#recete-kalemler>div').forEach(row=>{
+    const sel=row.querySelector('.rk-hm');
+    const opt=sel?.options[sel.selectedIndex];
+    const maliyet=parseFloat(opt?.dataset.maliyet)||0;
+    const birim=opt?.dataset.birim||'';
+    const miktar=parseFloat(row.querySelector('.rk-miktar')?.value)||0;
+    const sat=maliyet*miktar;
+    toplam+=sat;
+    const lbl=row.querySelector('.rk-maliyet-lbl');
+    if(lbl)lbl.textContent=miktar&&maliyet?`${miktar} ${birim} × ₺${maliyet}/${birim} = ${tl(sat)}`:'';
+  });
+  const porsiyon=parseFloat(document.getElementById('recete-porsiyon').value)||1;
+  const porMaliyet=toplam/porsiyon;
+  document.getElementById('rm-toplam').textContent=tl(toplam);
+  document.getElementById('rm-porsiyon').textContent=tl(porMaliyet);
+  // Kâr marjı — seçili ürünün satış fiyatından
+  const sel=document.getElementById('recete-urun-sel');
+  const fiyat=parseFloat(sel?.options[sel.selectedIndex]?.dataset.fiyat)||0;
+  if(fiyat&&porMaliyet){
+    const marj=Math.round(((fiyat-porMaliyet)/fiyat)*100);
+    document.getElementById('rm-marj').textContent='%'+marj;
+    document.getElementById('rm-marj').style.color=marj>50?'var(--green)':marj>20?'var(--warn)':'var(--red)';
+  }else{
+    document.getElementById('rm-marj').textContent='—';
+  }
+  return{toplam,porMaliyet};
+}
+
+async function receteKaydet(){
+  const sel=document.getElementById('recete-urun-sel');
+  const urun_id=sel.value;
+  const urun_adi=sel.options[sel.selectedIndex]?.dataset.adi||'';
+  const fiyat=parseFloat(sel.options[sel.selectedIndex]?.dataset.fiyat)||0;
+  if(!urun_id){toast('Ürün seçin','err');return;}
+  const porsiyon_sayisi=parseFloat(document.getElementById('recete-porsiyon').value)||1;
+  // Kalemleri topla
+  const porsiyonlar=[];
+  document.querySelectorAll('#recete-kalemler>div').forEach(row=>{
+    const hmSel=row.querySelector('.rk-hm');
+    const hammadde_id=hmSel?.value;
+    const isim=hmSel?.options[hmSel.selectedIndex]?.text||'';
+    const birim=hmSel?.options[hmSel.selectedIndex]?.dataset.birim||'';
+    const miktar=parseFloat(row.querySelector('.rk-miktar')?.value)||0;
+    const maliyet=parseFloat(hmSel?.options[hmSel.selectedIndex]?.dataset.maliyet)||0;
+    if(hammadde_id&&miktar)porsiyonlar.push({hammadde_id,isim,birim,miktar,birim_maliyet:maliyet,satir_maliyet:miktar*maliyet});
+  });
+  if(!porsiyonlar.length){toast('En az bir hammadde ekleyin','err');return;}
+  const{toplam,porMaliyet}=receteMaliyet();
+  const kar_marji=fiyat?Math.round(((fiyat-porMaliyet)/fiyat)*100):0;
+  try{
+    const payload={urun_id,urun_adi,sube_id:SUBE,porsiyonlar,porsiyon_sayisi,toplam_maliyet:toplam,kar_marji};
+    let error;
+    if(receteEditId){({error}=await sb.from('receteler').update(payload).eq('id',receteEditId));}
+    else{({error}=await sb.from('receteler').upsert(payload,{onConflict:'urun_id'}));}
+    if(error)throw error;
+    // Ürünün maliyetini güncelle
+    await sb.from('urunler').update({maliyet:porMaliyet}).eq('id',urun_id);
+    toast('Reçete kaydedildi ✓','ok');closeModal('recete-modal');loadRecete();
+  }catch(e){toast('Hata: '+e.message,'err');}
+}
+
+// Satış yapılınca stok düş
+async function stokDus(satirlar){
+  try{
+    // Her ürünün reçetesini bul
+    for(const satir of satirlar){
+      const{data:recete}=await sb.from('receteler').select('*').eq('urun_id',satir.urun_id).single();
+      if(!recete?.porsiyonlar)continue;
+      // Her hammaddeyi düş
+      for(const p of recete.porsiyonlar){
+        const dusecekMiktar=p.miktar*satir.adet;
+        const{data:hm}=await sb.from('hammaddeler').select('stok_miktari').eq('id',p.hammadde_id).single();
+        if(hm){
+          const yeni=Math.max(0,(hm.stok_miktari||0)-dusecekMiktar);
+          await sb.from('hammaddeler').update({stok_miktari:yeni}).eq('id',p.hammadde_id);
+        }
+      }
+    }
+  }catch(e){console.log('Stok düşme hatası:',e);}
+}
+
 // STOK
 async function loadStok(){
   try{
@@ -1464,6 +1870,213 @@ async function loadMesajlar(){
         </div></div>`;
     }).join('');
     el.scrollTop=el.scrollHeight;
+  }catch(e){}
+}
+
+// AY SONU
+let posTerminaller=[];let digerSayac=0;
+
+function aysonuAlt(id){
+  ['kapanis','pos','aylar'].forEach(s=>{
+    document.getElementById('as-'+s).style.display=s===id?'block':'none';
+  });
+  const btns=['as-kapanis-btn','as-pos-btn','as-gecmis-btn'];
+  const ids=['kapanis','pos','aylar'];
+  btns.forEach((b,i)=>{
+    const el=document.getElementById(b);
+    if(el){el.style.background=ids[i]===id?'var(--blue)':'transparent';el.style.color=ids[i]===id?'white':'var(--blue)';}
+  });
+  if(id==='pos'){loadPosTerminaller();}
+  if(id==='aylar'){loadAyGecmis();}
+}
+
+async function loadAySonu(){
+  document.getElementById('as-baslangic').value=daysAgo(35);
+  document.getElementById('as-bitis').value=today();
+  await loadPosTerminallerSilent();
+  renderPosSatirlari();
+}
+
+async function loadPosTerminallerSilent(){
+  try{
+    const{data}=await sb.from('pos_terminaller').select('*').eq('sube_id',SUBE).eq('aktif',true).order('isim');
+    posTerminaller=data||[];
+  }catch(e){posTerminaller=[];}
+}
+
+async function donemOtoDoldur(){
+  const bas=document.getElementById('as-baslangic').value;
+  const bit=document.getElementById('as-bitis').value;
+  if(!bas||!bit){toast('Tarih aralığı seçin','err');return;}
+  try{
+    const{data:kasalar}=await sb.from('gunluk_kasalar').select('*').eq('sube_id',SUBE).gte('tarih',bas).lte('tarih',bit);
+    const topNakit=(kasalar||[]).reduce((s,r)=>s+(r.nakit||0),0);
+    const topKart=(kasalar||[]).reduce((s,r)=>s+(r.kart||0),0);
+    document.getElementById('as-kasa-ozet').innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="kasa-box kb"><div class="kbox-lbl">Nakit</div><div class="kbox-val" style="font-size:16px;">${tl(topNakit)}</div></div>
+        <div class="kasa-box kb"><div class="kbox-lbl">Kart</div><div class="kbox-val" style="font-size:16px;">${tl(topKart)}</div></div>
+        <div class="kasa-box"><div class="kbox-lbl">Toplam</div><div class="kbox-val" style="font-size:16px;">${tl(topNakit+topKart)}</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">${(kasalar||[]).length} gün · ${bas} → ${bit}</div>`;
+    document.getElementById('as-net-nakit').textContent=tl(topNakit);
+    document.getElementById('as-net-kart').textContent=tl(topKart);
+    renderPosSatirlari(topKart);
+    hesaplaNet(topNakit,topKart);
+    toast('Dönem hesaplandı ✓','ok');
+  }catch(e){toast('Hata: '+e.message,'err');}
+}
+
+function renderPosSatirlari(topKart){
+  const el=document.getElementById('as-pos-kesimler');
+  if(!posTerminaller.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;">POS terminali yok. POS Terminaller sekmesinden ekleyin.</div>';return;}
+  el.innerHTML=posTerminaller.map((p,i)=>`
+    <div style="background:var(--cream);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <div><div style="font-size:13px;font-weight:700;">${p.isim}</div><div style="font-size:11px;color:var(--text3);">${p.banka||''} · %${p.komisyon_orani}</div></div>
+        <span class="badge b-blue">%${p.komisyon_orani}</span>
+      </div>
+      <div class="row2">
+        <div><label class="lbl" style="margin-top:0">Kart Cirosu (₺)</label>
+          <input type="number" id="pos-ciro-${i}" placeholder="0" value="${topKart?Math.round(topKart/posTerminaller.length):''}" oninput="posHesapla(${i},${p.komisyon_orani},${p.aylik_kira})">
+        </div>
+        <div><label class="lbl" style="margin-top:0">Kesinti + Kira</label>
+          <input type="text" id="pos-kesinti-${i}" readonly style="background:var(--cream2);font-weight:700;color:var(--red);">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Aylık kira: ${tl(p.aylik_kira)}</div>
+    </div>`).join('');
+}
+
+function posHesapla(i,oran,kira){
+  const ciro=parseFloat(document.getElementById(`pos-ciro-${i}`)?.value)||0;
+  const kesinti=ciro*(oran/100)+kira;
+  const el=document.getElementById(`pos-kesinti-${i}`);
+  if(el)el.value=tl(kesinti);
+  hesaplaNetToplam();
+}
+
+function hesaplaNetToplam(){
+  const nakit=parseFloat(document.getElementById('as-net-nakit').textContent.replace(/[^\d.,]/g,'').replace(',','.'))||0;
+  const kart=parseFloat(document.getElementById('as-net-kart').textContent.replace(/[^\d.,]/g,'').replace(',','.'))||0;
+  hesaplaNet(nakit,kart);
+}
+
+function hesaplaNet(nakit,kart){
+  let posTop=0;
+  posTerminaller.forEach((p,i)=>{
+    const ciro=parseFloat(document.getElementById(`pos-ciro-${i}`)?.value)||0;
+    posTop+=ciro*(p.komisyon_orani/100)+(p.aylik_kira||0);
+  });
+  let digerTop=0;
+  document.querySelectorAll('.as-diger-tutar').forEach(inp=>{digerTop+=parseFloat(inp.value)||0;});
+  const net=nakit+kart-posTop-digerTop;
+  document.getElementById('as-net-pos').textContent=tl(posTop);
+  document.getElementById('as-net-diger').textContent=tl(digerTop);
+  document.getElementById('as-net-toplam').textContent=tl(net);
+}
+
+function digerGiderEkle(){
+  const id='dg'+digerSayac++;
+  const div=document.createElement('div');
+  div.id=id;
+  div.style.cssText='display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:6px;align-items:end;';
+  div.innerHTML=`
+    <div><label class="lbl" style="margin-top:0">Açıklama</label><input type="text" placeholder="örn: Banka EFT masrafı"></div>
+    <div><label class="lbl" style="margin-top:0">Tutar (₺)</label><input type="number" class="as-diger-tutar" placeholder="0" oninput="hesaplaNetToplam()"></div>
+    <button onclick="document.getElementById('${id}').remove();hesaplaNetToplam()" style="height:40px;width:30px;background:var(--red-bg);color:var(--red);border:none;border-radius:6px;cursor:pointer;font-size:16px;">×</button>`;
+  document.getElementById('as-diger-giderler').appendChild(div);
+}
+
+async function ayKapat(){
+  const bas=document.getElementById('as-baslangic').value;
+  const bit=document.getElementById('as-bitis').value;
+  if(!bas||!bit){toast('Tarih aralığı seçin','err');return;}
+  if(!confirm(`${bas} → ${bit} dönemini kapatmak istiyor musunuz?`))return;
+  const pos_kesimleri=posTerminaller.map((p,i)=>{
+    const ciro=parseFloat(document.getElementById(`pos-ciro-${i}`)?.value)||0;
+    const kesinti=ciro*(p.komisyon_orani/100)+(p.aylik_kira||0);
+    return{terminal:p.isim,banka:p.banka,oran:p.komisyon_orani,ciro,kesinti,kira:p.aylik_kira};
+  });
+  const toplam_pos_kesinti=pos_kesimleri.reduce((s,p)=>s+p.kesinti,0);
+  const diger_giderler=[];
+  document.querySelectorAll('#as-diger-giderler>div').forEach(row=>{
+    const aciklama=row.querySelector('input[type=text]')?.value;
+    const tutar=parseFloat(row.querySelector('.as-diger-tutar')?.value)||0;
+    if(aciklama&&tutar)diger_giderler.push({aciklama,tutar});
+  });
+  const toplam_diger=diger_giderler.reduce((s,d)=>s+d.tutar,0);
+  const toplam_nakit=parseFloat(document.getElementById('as-net-nakit').textContent.replace(/[^\d]/g,''))||0;
+  const toplam_kart=parseFloat(document.getElementById('as-net-kart').textContent.replace(/[^\d]/g,''))||0;
+  const net_kasa=toplam_nakit+toplam_kart-toplam_pos_kesinti-toplam_diger;
+  const notlar=document.getElementById('as-notlar').value;
+  try{
+    const{error}=await sb.from('ay_sonu_kapanis').insert({
+      sube_id:SUBE,donem_baslangic:bas,donem_bitis:bit,
+      toplam_nakit,toplam_kart,pos_kesimleri,toplam_pos_kesinti,
+      toplam_pos_kira:posTerminaller.reduce((s,p)=>s+(p.aylik_kira||0),0),
+      diger_giderler,toplam_diger,net_kasa,durum:'kapali',notlar,personel:PERSONEL
+    });
+    if(error)throw error;
+    toast('Ay kapatıldı ✓','ok');
+    document.getElementById('as-kasa-ozet').innerHTML='<div style="color:var(--green);font-size:13px;">✓ Dönem kapatıldı.</div>';
+    document.getElementById('as-diger-giderler').innerHTML='';
+    ['as-net-nakit','as-net-kart','as-net-pos','as-net-diger','as-net-toplam'].forEach(id=>{document.getElementById(id).textContent='₺ 0';});
+    document.getElementById('as-baslangic').value=bit;
+    document.getElementById('as-bitis').value=today();
+  }catch(e){toast('Hata: '+e.message,'err');}
+}
+
+async function loadPosTerminaller(){
+  await loadPosTerminallerSilent();
+  const el=document.getElementById('pos-liste');
+  if(!posTerminaller.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">Terminal yok</div>';return;}
+  el.innerHTML=posTerminaller.map(p=>`
+    <div class="li">
+      <div><div class="li-main">${p.isim}</div><div class="li-sub">${p.banka||''} · %${p.komisyon_orani} · Kira: ${tl(p.aylik_kira)}/ay</div></div>
+      <button class="btn btn-red btn-sm" onclick="posSil('${p.id}')">Sil</button>
+    </div>`).join('');
+}
+
+async function posEkle(){
+  const isim=document.getElementById('pos-isim').value.trim();
+  if(!isim){toast('Terminal adı girin','err');return;}
+  const banka=document.getElementById('pos-banka').value;
+  const komisyon_orani=parseFloat(document.getElementById('pos-oran').value)||1.5;
+  const aylik_kira=parseFloat(document.getElementById('pos-kira').value)||0;
+  try{
+    const{error}=await sb.from('pos_terminaller').insert({sube_id:SUBE,isim,banka,komisyon_orani,aylik_kira});
+    if(error)throw error;
+    toast('Terminal eklendi ✓','ok');
+    ['pos-isim','pos-banka','pos-oran','pos-kira'].forEach(id=>document.getElementById(id).value='');
+    loadPosTerminaller();
+  }catch(e){toast('Hata: '+e.message,'err');}
+}
+
+async function posSil(id){
+  if(!confirm('Bu terminali silmek istiyor musunuz?'))return;
+  try{
+    await sb.from('pos_terminaller').update({aktif:false}).eq('id',id);
+    toast('Silindi','ok');loadPosTerminaller();
+  }catch(e){toast('Hata','err');}
+}
+
+async function loadAyGecmis(){
+  try{
+    const{data}=await sb.from('ay_sonu_kapanis').select('*').eq('sube_id',SUBE).order('donem_bitis',{ascending:false}).limit(24);
+    const el=document.getElementById('ay-gecmis-liste');
+    if(!data?.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">Kapalı ay yok</div>';return;}
+    el.innerHTML=data.map(r=>`
+      <div class="gc-card" style="margin-bottom:10px;">
+        <div class="gc-top"><span class="gc-type">${r.donem_baslangic} → ${r.donem_bitis}</span><span class="badge b-green">Kapalı</span></div>
+        <div class="gc-val">${tl(r.net_kasa)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;">
+          <div style="font-size:11px;color:var(--text3);">Nakit<br><strong>${tl(r.toplam_nakit)}</strong></div>
+          <div style="font-size:11px;color:var(--text3);">Kart<br><strong>${tl(r.toplam_kart)}</strong></div>
+          <div style="font-size:11px;color:var(--red);">Kesinti<br><strong>-${tl((r.toplam_pos_kesinti||0)+(r.toplam_diger||0))}</strong></div>
+        </div>
+        ${r.notlar?`<div class="gc-detail" style="margin-top:6px;">${r.notlar}</div>`:''}
+      </div>`).join('');
   }catch(e){}
 }
 
